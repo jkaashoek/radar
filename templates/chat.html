@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Chat
+{% endblock %}
+
+{% block main %}
+    <table align="center">
+        <th>Users</th>
+        {% for user in users %}
+        <tr><td>{{ user.username }}</td></tr>
+        {% endfor %}
+
+    </table>
+{% endblock %}
