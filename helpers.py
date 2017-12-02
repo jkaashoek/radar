@@ -1,5 +1,5 @@
 import csv
-import sqlite
+import sqlite3
 
 from flask import redirect, render_template, request, session, g
 from functools import wraps
