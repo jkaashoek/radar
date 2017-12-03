@@ -6,19 +6,36 @@ $(document).ready(function() {
     '#58dc00', '#287b00', '#a8f07a', '#4ae8c4',
     '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
   ];
-
+  var username = $('.user').text();
+  var buddy = $('.buddy').text();
   var $messages = $('.messages');
   var $window = $(window);
+  var socket;
 
   // Prompt for setting a username
-  var username = $('.user').text();
+  console.log("username og: ", username, username.length);
 
-  var socket = io(); //.connect('http://' + document.domain + ':' + location.port);
- // socket.emit("new message", {data: 'Hello'});
-  socket.on('connect', function() {
-    console.log("connected");
-    socket.emit("my event", {data: "now connected"});
-  })
+
+  if (username != '') {
+    console.log("connect ", username)
+    socket = io();
+
+    socket.on('connect', function() {
+      console.log("connected", username);
+      socket.emit("connected", {data: username});
+    })
+
+    socket.on('disconnect', function() {
+      username = '';
+      console.log("disconnected");
+    })
+
+    socket.on("server", function(data) {
+      console.log("message from server");
+      addChatMessage(data);
+    })
+  }
+
 
   $window.keydown(function (event) {
     var text = $("#inputMessage").val();
@@ -26,11 +43,20 @@ $(document).ready(function() {
       $("#inputMessage").val('');
       var data = {
         username: username,
-        message: text
+        message: text,
+        buddy: buddy
       };
       console.log("DATA: ", data);
-      socket.emit("client", data)
+      socket.emit("client", data);
     }
+  })
+
+  $(".btnmsg").click(function() {
+    console.log("link clicked");
+    id = $(this).attr('name');
+    console.log(id)
+    socket.emit("private message", id)
+
   })
   
   // $("#trigger").click(function() {
@@ -53,9 +79,12 @@ $(document).ready(function() {
     var $messageBodyDiv = $('<span class="messageBody">')
       .text(data.message);
 
+    var $messageAlertDiv = $('<span class="alertBody">')
+      .text(data.alert);
+
     var $messageDiv = $('<li class="message"/>')
       .data('username', data.username)
-      .append($usernameDiv, " ", $messageBodyDiv);
+      .append($usernameDiv, " ", $messageBodyDiv, " ", $messageAlertDiv);
 
     $messages.append($messageDiv);
   }
@@ -71,10 +100,6 @@ $(document).ready(function() {
     return COLORS[index];
   }
 
-  socket.on("server", function(data) {
-    console.log("message from server");
-    addChatMessage(data);
-  })
 
 });
 

@@ -6,7 +6,7 @@ from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 
-from helpers import apology, login_required, get_db, make_dicts, query_db, insert
+from helpers import apology, login_required, get_db, make_dicts, query_db, insert, get_user
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -17,18 +17,38 @@ app.config["SESSION_TYPE"] = "filesystem"
 socketio = SocketIO(app)
 Session(app)
 
+active_users = {}
+
 if __name__ == '__main__':
     socketio.run(app)
 
+@socketio.on("connected")
+def connected(json):
+	print("join", json, request.sid)
+	print (json['data'])
+	active_users[json['data']] = request.sid
+
+@socketio.on("disconnect")
+def disconnect():
+	print("disconnected")
+
 @socketio.on("connect")
-def connected():
-	print("connected")
+def connect():
+	print("connect")
 
 @socketio.on('client')
 def new_mesage(json):
 	print('received json: ' + str(json))
-	emit("server", json, broadcast=True)
-
+	json["alert"] = ""
+	if json["buddy"] in active_users:
+		room = active_users[json["buddy"]]
+		emit("server", json, room=room)
+		emit("server", json)
+	elif json["buddy"] == '':
+		emit("server", json, broadcast=True)
+	else:
+		json["alert"] = "buddy not online"
+		emit("server", json)
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -39,7 +59,8 @@ def close_connection(exception):
 @app.route("/")
 @login_required
 def index():
-    return render_template("index.html")
+	user = get_user(session["user_id"])
+   	return render_template("index.html", user=user)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -76,7 +97,7 @@ def login():
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
-        return render_template("login.html")
+        return render_template("login.html", user='')
 
 
 @app.route("/logout")
@@ -92,25 +113,39 @@ def logout():
 @app.route("/about", methods=["GET"])
 def about():
     """Redirect to about page"""
+    return render_template("about.html", user='')
 
+@app.route("/users", methods=["GET"])
+@login_required
+def users():
+    """Redirect to about page"""
+    users = query_db("SELECT * FROM users")
+    user_id = session["user_id"]
+    user = get_user(session["user_id"])
     # Redirect user to about page
-    return render_template("about.html")
+    return render_template("users.html", users=users, curr_user=user_id, user=user)
 
 @app.route("/chat", methods=["GET"])
 @login_required
 def chat():
     """Redirect to chat page"""
-    user_id = session["user_id"]
-    row = query_db("SELECT username FROM users WHERE id=?", [user_id], one=True)
-    return render_template("chat.html", user=row["username"])
+    user = get_user(session["user_id"])
+    return render_template("chat.html", user=user)
+
+@app.route("/private/<username>", methods=["GET"])
+@login_required
+def private(username):
+    """Redirect to chat page"""
+    cur_user = get_user(session["user_id"])
+    return render_template("private.html", user=cur_user, dest=username)
 
 @app.route("/discussions", methods=["GET"])
 @login_required
 def discussions():
     """Redirect to about page"""
-
+    user = get_user(session["user_id"])
     # Redirect user to about page
-    return render_template("discussions.html")
+    return render_template("discussions.html", user=user)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -149,7 +184,7 @@ def register():
         return redirect("/")
 
     else:
-        return render_template("register.html")
+        return render_template("register.html", user='')
 
 def errorhandler(e):
     """Handle error"""

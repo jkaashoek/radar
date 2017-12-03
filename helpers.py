@@ -63,3 +63,9 @@ def insert(table, fields=(), values=()):
     id = cur.lastrowid
     cur.close()
     return id
+
+def get_user(user_id):
+    row = query_db("SELECT username FROM users WHERE id=?", [user_id], one=True)
+    if row == None:
+        return ''
+    return row["username"]
