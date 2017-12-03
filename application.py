@@ -20,20 +20,29 @@ Session(app)
 if __name__ == '__main__':
     socketio.run(app)
 
-@app.route("/")
-@login_required
-def index():
-    return render_template("index.html")
+@socketio.on("connect")
+def connected():
+	print("connected")
 
 @socketio.on('my event')
-def handle_my_custom_event(json):
-    print('received json: ' + str(json))
+def new_mesage(json):
+	print('received json: ' + str(json))
+
+@socketio.on('new message')
+def new_mesage(json):
+	print('received json: ' + str(json))
+
 
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
+
+@app.route("/")
+@login_required
+def index():
+    return render_template("index.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -94,8 +103,7 @@ def about():
 @login_required
 def chat():
     """Redirect to chat page"""
-    users = query_db("SELECT * FROM users")
-    return render_template("chat.html", users=users)
+    return render_template("chat.html")
 
 @app.route("/discussions", methods=["GET"])
 @login_required
