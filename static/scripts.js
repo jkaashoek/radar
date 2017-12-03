@@ -8,6 +8,7 @@ $(document).ready(function() {
   ];
 
   var $messages = $('.messages');
+  var $window = $(window);
 
   // Prompt for setting a username
   var username = $('.user').text();
@@ -18,16 +19,29 @@ $(document).ready(function() {
     console.log("connected");
     socket.emit("my event", {data: "now connected"});
   })
-  
-  $("#trigger").click(function() {
-    console.log("clicked");
-    var text = $("#chat").val();
-    var data = {
+
+  $window.keydown(function (event) {
+    var text = $("#inputMessage").val();
+    if(event.which == 13 && text != "") {
+      $("#inputMessage").val('');
+      var data = {
         username: username,
         message: text
-    };
-    socket.emit("client", data);
+      };
+      console.log("DATA: ", data);
+      socket.emit("client", data)
+    }
   })
+  
+  // $("#trigger").click(function() {
+  //   console.log("clicked");
+  //   var text = $("#inputMessage").val();
+  //   var data = {
+  //       username: username,
+  //       message: text
+  //   };
+  //   socket.emit("client", data);
+  // })
 
   function addChatMessage(data) {
     console.log(data);

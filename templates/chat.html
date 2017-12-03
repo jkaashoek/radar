@@ -31,17 +31,17 @@
     </head>
 
     <body>
-    	<div class="user">
+    	<div class="user" style="display: none">
     		{{ user }}
     	</div>
-		<div "box">
-			<div class="chatArea">
-        		<ul class="messages"></ul>
-     		 </div>
-
-			<input id="chat" type="text" />
-			<button id="trigger">submit</button>
-		</div>
+    	<ul class="pages">
+		    <li class="chat page">
+		      <div class="chatArea">
+		        <ul class="messages"></ul>
+		      </div>
+		      <input id="inputMessage" class="inputMessage" placeholder="Type here..."/>
+		      <!-- <button id="trigger">submit</button> -->
+		</ul>
     </body>
 
 </html>
