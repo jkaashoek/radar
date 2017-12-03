@@ -10,7 +10,7 @@ $(document).ready(function() {
   var $messages = $('.messages');
 
   // Prompt for setting a username
-  var username = "jkaashoek";
+  var username = $('.user').text();
 
   var socket = io(); //.connect('http://' + document.domain + ':' + location.port);
  // socket.emit("new message", {data: 'Hello'});
@@ -26,7 +26,6 @@ $(document).ready(function() {
         username: username,
         message: text
     };
-    addChatMessage(data);
     socket.emit("client", data);
   })
 

@@ -100,7 +100,9 @@ def about():
 @login_required
 def chat():
     """Redirect to chat page"""
-    return render_template("chat.html")
+    user_id = session["user_id"]
+    row = query_db("SELECT username FROM users WHERE id=?", [user_id], one=True)
+    return render_template("chat.html", user=row["username"])
 
 @app.route("/discussions", methods=["GET"])
 @login_required
