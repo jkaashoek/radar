@@ -50,3 +50,16 @@ def query_db(query, args=(), one=False):
 def make_dicts(cursor, row):
     return dict((cursor.description[idx][0], value)
                 for idx, value in enumerate(row))
+
+def insert(table, fields=(), values=()):
+    # g.db is the database connection
+    query = 'INSERT INTO %s (%s) VALUES (%s)' % (
+        table,
+        ', '.join(fields),
+        ', '.join(['?'] * len(values))
+    )
+    cur = get_db().execute(query, values)
+    get_db().commit()
+    id = cur.lastrowid
+    cur.close()
+    return id

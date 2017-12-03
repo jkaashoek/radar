@@ -1,12 +1,12 @@
 from flask import Flask, flash, redirect, render_template, request, session, g
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, send, emit
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 
-from helpers import apology, login_required, get_db, make_dicts, query_db
+from helpers import apology, login_required, get_db, make_dicts, query_db, insert
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -24,13 +24,10 @@ if __name__ == '__main__':
 def connected():
 	print("connected")
 
-@socketio.on('my event')
+@socketio.on('client')
 def new_mesage(json):
 	print('received json: ' + str(json))
-
-@socketio.on('new message')
-def new_mesage(json):
-	print('received json: ' + str(json))
+	emit("server", json, broadcast=True)
 
 
 @app.teardown_appcontext
@@ -135,8 +132,9 @@ def register():
         hash = generate_password_hash(request.form.get("password"))
 
         # Add user into users table
-        result = db.execute("INSERT INTO users (username, hash) VALUES (:username, :hash)",
-                            username=request.form.get("username"), hash=hash)
+        result = insert("users", ("username", "hash"), (request.form.get("username"), hash))
+
+        print(result)
 
         # Handle case if username already exists
         if not result:
