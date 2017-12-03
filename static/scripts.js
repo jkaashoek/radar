@@ -9,6 +9,7 @@ $(document).ready(function() {
   var username = $('.user').text();
   var buddy = $('.buddy').text();
   var $messages = $('.messages');
+  var $notifications = $('.notifications');
   var $window = $(window);
   var socket;
 
@@ -32,7 +33,29 @@ $(document).ready(function() {
 
     socket.on("server", function(data) {
       console.log("message from server");
-      addChatMessage(data);
+
+      // Private chat and both users are on page
+      if (buddy != "" && data.username == buddy) {
+        console.log("Pchat both")
+        addChatMessage(data);
+      }
+
+      // Public chat
+      else if (buddy == "" && data.buddy == "") {
+        console.log("public chat")
+        addChatMessage(data);
+      }
+
+      else if (data.username == username) {
+        addChatMessage(data);
+      }
+
+      // Private chat and one user is not on chat page 
+      else if (data.buddy != "") {
+        console.log("Pchat missing")
+        addNotification(data)
+      }
+      
     })
   }
 
@@ -80,13 +103,24 @@ $(document).ready(function() {
       .text(data.message);
 
     var $messageAlertDiv = $('<span class="alertBody">')
-      .text(data.alert);
+      .text(data.alert)
+      .css('color', '#FF0000');
 
     var $messageDiv = $('<li class="message"/>')
       .data('username', data.username)
-      .append($usernameDiv, " ", $messageBodyDiv, " ", $messageAlertDiv);
+      .append($usernameDiv, " ", $messageBodyDiv, "<br>", $messageAlertDiv);
 
     $messages.append($messageDiv);
+  }
+
+  function addNotification(data) {
+    console.log(data);
+
+    var $notificationDiv = $('<span class="notif"/>')
+      .append(data.username, " wants to chat with you.")
+
+    $notifications.append($notificationDiv);
+
   }
 
   function getUsernameColor (username) {

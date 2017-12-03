@@ -30,7 +30,12 @@ def connected(json):
 
 @socketio.on("disconnect")
 def disconnect():
-	print("disconnected")
+	print("disconnected", request.sid)
+	for key, val in active_users.items():
+		if val == request.sid:
+			print("user left", key)
+			del active_users[key]
+
 
 @socketio.on("connect")
 def connect():
@@ -130,14 +135,14 @@ def users():
 def chat():
     """Redirect to chat page"""
     user = get_user(session["user_id"])
-    return render_template("chat.html", user=user)
+    return render_template("chat.html", user=user, dest="")
 
 @app.route("/private/<username>", methods=["GET"])
 @login_required
 def private(username):
     """Redirect to chat page"""
     cur_user = get_user(session["user_id"])
-    return render_template("private.html", user=cur_user, dest=username)
+    return render_template("chat.html", user=cur_user, dest=username)
 
 @app.route("/discussions", methods=["GET"])
 @login_required

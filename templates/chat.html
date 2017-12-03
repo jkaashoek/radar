@@ -31,8 +31,13 @@
     </head>
 
     <body>
-    	<h1 align="center">Public group with all users</h1>
-    	<div class="buddy" style="display: none"></div>
+    	{% if dest == "" %}
+    		<h1 align="center">Public group with all users</h1>
+    		<div class="buddy" style="display: none"></div>
+    	{% else %}
+    		<h1 align="center">Private chat with {{ dest }}</h1>
+        	<div class="buddy" style="display: none">{{ dest }}</div>
+        {% endif %}
     	<div class="user" style="display: none">{{ user }}</div>
     	<ul class="pages">
 		    <li class="chat page">
@@ -41,6 +46,7 @@
 		      </div>
 		      <input id="inputMessage" class="inputMessage" placeholder="Type here..."/>
 		      <!-- <button id="trigger">submit</button> -->
+		    </li>
 		</ul>
     </body>
 
