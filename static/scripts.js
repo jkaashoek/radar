@@ -117,7 +117,8 @@ $(document).ready(function() {
     console.log(data);
 
     var $notificationDiv = $('<span class="notif"/>')
-      .append(data.username, " wants to chat with you.")
+      .append(data.username, " wants to chat with you.", "<br>")
+      .css('color', "blue");
 
     $notifications.append($notificationDiv);
 

@@ -65,8 +65,14 @@ def close_connection(exception):
 @login_required
 def index():
 	user = get_user(session["user_id"])
-   	return render_template("index.html", user=user)
+   	return render_template("index.html", user=user, my_prof=True)
 
+@app.route("/profile/<user_id>")
+@login_required
+def profile(user_id):
+	view_user = query_db("SELECT * FROM users WHERE id=?", [user_id], one=True)
+	user = session["user_id"]
+   	return render_template("index.html", user=user, view_user=view_user, my_prof=False)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

@@ -28,7 +28,7 @@ main .form-control
     display: inline-block;
 
     /* override Bootstrap's 100% width for form controls */
-    width: auto;
+    width: auto;    
 }
 
 main
@@ -114,5 +114,13 @@ ul {
 
 .borderless td, .borderless th {
     border: none;
+}
+
+.notifs{
+    display: none;
+}
+
+.col-md-9{
+    border-right: 10px;
 }
 

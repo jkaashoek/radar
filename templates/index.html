@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block main %}
-    Welcome to RADR!
-
-    <div class="notificationArea">
-		<ul class="notifications"></ul>
-	</div>
+    {% if my_prof %}
+    	<h2>My profile </h2>
+    {% else %}
+    	You are viewing {{ view_user.username }}'s profile
+    {% endif %}
 {% endblock %}

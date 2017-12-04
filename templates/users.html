@@ -12,8 +12,8 @@
     	{% if u.id != curr_user %}
     		<tr>
     			<td id="{{ u.id }}"> {{ u.username }}</td>
-    			<td><button class="btn btnprof" id="profile" name="{{ u.username }}">View profile</button></td>
-    			<td><a href="/private/{{u.username}}">Start Private Chat</a> </td>
+    			<td><a href="/profile/{{u.id}}">View profile</a> </td>
+    			<td><a href="/private/{{u.username}}">Enter Private Chat</a> </td>
     		</tr>
     	{% endif %}
     	{% endfor %}
