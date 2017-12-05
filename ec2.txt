@@ -1,0 +1,56 @@
+Create a new instance
+
+# Select ubuntu
+
+# Select security group launch-wizard-3
+  It opens port 80 (web) and 22 (ssh)
+
+# Select tesvm1.pem
+
+$ ssh -i testvm1.pem ubuntu@ec2-54-164-222-23.compute-1.amazonaws.com
+
+$ sudo apt-get update
+ 
+$ sudo apt-get install apache2
+
+$ sudo apt install python-pip
+
+$ sudo pip install flask
+$ sudo pip install flask_socketio
+$ sudo pip install flask_session
+
+$ git clone https://github.com/jkaashoek/radar.git
+
+$ sudo apt-get install libapache2-mod-wsgi python-dev
+
+$ sudo vi /etc/apache2/sites-enables/000-default.conf
+
+# add:
+
+        WSGIDaemonProcess application user=ubuntu group=ubuntu threads=5
+        WSGIScriptAlias / /home/ubuntu/radar/radar.wsgi
+                <Directory /home/ubuntu/radar/>
+                     WSGIProcessGroup application
+                     WSGIApplicationGroup %{GLOBAL}
+                     Require all granted
+                </Directory>
+                Alias /static /home/ubuntu/radar/static
+                <Directory /home/ubuntu/radar/static/>
+                     Require all granted
+                </Directory>
+
+
+# in radar, create radar.wsgi
+
+import sys
+sys.path.insert(0, '/home/ubuntu/radar/')
+
+from application import app as application
+
+application.debug = True
+
+# copy database:
+
+$ scp -i testvm1.pem radar.db ubuntu@ec2-54-164-222-23.compute-1.amazonaws.com:~/
+
+$
