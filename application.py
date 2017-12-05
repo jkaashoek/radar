@@ -44,6 +44,9 @@ def connect():
 @socketio.on('client')
 def new_mesage(json):
 	print('received json: ' + str(json))
+
+        result = insert("messages", ("username", "buddy, text, stamp"), (json["username"], json["buddy"], json["message"], json["stamp"]))
+
 	json["alert"] = ""
 	if json["buddy"] in active_users:
 		room = active_users[json["buddy"]]

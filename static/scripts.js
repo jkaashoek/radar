@@ -67,7 +67,8 @@ $(document).ready(function() {
       var data = {
         username: username,
         message: text,
-        buddy: buddy
+        buddy: buddy,
+        stamp: Date()
       };
       console.log("DATA: ", data);
       socket.emit("client", data);
