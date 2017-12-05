@@ -3,5 +3,11 @@ CREATE TABLE messages (
  username TEXT NOT NULL,
  buddy TEXT NOT NULL,
  text TEXT NOT NULL,
- stamp TEXT NOT NULL
+ stamp DATETIME DEFAULT current_timestamp
+);
+
+CREATE TABLE 'users' (
+'id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+'username' TEXT NOT NULL, 
+'hash' TEXT NOT NULL, 
 );

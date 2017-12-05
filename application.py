@@ -36,7 +36,6 @@ def disconnect():
 			print("user left", key)
 			del active_users[key]
 
-
 @socketio.on("connect")
 def connect():
 	print("connect")
@@ -45,7 +44,7 @@ def connect():
 def new_mesage(json):
 	print('received json: ' + str(json))
 
-        result = insert("messages", ("username", "buddy, text, stamp"), (json["username"], json["buddy"], json["message"], json["stamp"]))
+	result = insert("messages", ("username", "buddy", "text"), (json["username"], json["buddy"], json["message"]))
 
 	json["alert"] = ""
 	if json["buddy"] in active_users:
@@ -143,15 +142,21 @@ def users():
 @login_required
 def chat():
     """Redirect to chat page"""
-    user = get_user(session["user_id"])
-    return render_template("chat.html", user=user, dest="")
+    cur_user = get_user(session["user_id"])
+    messages = query_db("SELECT * FROM messages WHERE buddy=?", [""])[-10:]
+    return render_template("chat.html", user=cur_user, dest="", messages=messages)
 
 @app.route("/private/<username>", methods=["GET"])
 @login_required
 def private(username):
     """Redirect to chat page"""
     cur_user = get_user(session["user_id"])
-    return render_template("chat.html", user=cur_user, dest=username)
+    user = query_db("SELECT * FROM users WHERE id=?", [session["user_id"]], one=True)
+    print("Private user: ", user)
+    messages = query_db("SELECT * FROM messages WHERE (username=? AND buddy=?) OR (username=? AND buddy=?) ORDER BY stamp DESC LIMIT 10",
+    					[user["username"], username, username, user["username"]])
+    print("Messages", messages)
+    return render_template("chat.html", user=cur_user, dest=username, messages=reversed(messages))
 
 @app.route("/discussions", methods=["GET"])
 @login_required
