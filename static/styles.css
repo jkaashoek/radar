@@ -121,3 +121,37 @@ ul {
   font-family: "Verdana", Helvetica, sans-serif;
 }
 
+.postContainer {
+  height: 60px;
+  outline: none;
+  position: fixed;
+  left: 0%;
+  right: 0%;
+  bottom: 0%;
+  width: 100%;
+}
+
+.postUsername {
+  font-weight: 300;
+  overflow: hidden;
+  text-align: left;
+}
+
+.post {
+  border: 2px solid;
+  padding-bottom: 2px;
+}
+
+.postText {
+  outline: none;
+}
+
+.posts {
+  padding-bottom: 10px;
+}
+
+.postText {
+  width: 80%;
+  height: 100%;
+}
+

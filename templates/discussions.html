@@ -5,6 +5,22 @@
 {% endblock %}
 
 {% block main %}
-
-    Discussion page!
+	<div class="discussionArea">
+		<ul class="posts">
+			{% for post in posts %}
+  				<li class="post">
+					<span class="username">{{ post.username }}</span>
+					<span class="stamp">&nbsp({{ post.stamp|strftime() }})</span> <br>
+					<span class="postBody">{{ post.text }}</span>
+        	{% endfor %}
+		</ul>
+	</div>
+	<div class="container postContainer">
+		<div class="row">
+			<div class="col-9">
+				<input id="postText" class="postText" placeholder="Post here"/>
+				<button id="submit" class="btn submit">Post</button>
+			</div>
+		</div>
+	</div>
 {% endblock %}

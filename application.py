@@ -78,12 +78,19 @@ def disconnect():
             user = get_user(session["user_id"])
             active_users.del_user(user, request.sid)
 
-@socketio.on('client')
-def new_mesage(json):
-	'''Handles when a user sends a new message.'''
+@socketio.on('post')
+def new_post(json):
+	print("New post ", json)
+	json["stamp"] = str(datetime.datetime.now())
+	result = insert("posts", ("username", "text", "stamp"), 
+					(json["username"], json["text"], json["stamp"]))
+	emit("add post", json, broadcast=True)
 
-        if not session.has_key("user_id"):
-            return
+@socketio.on('new message')
+def new_message(json):
+	'''Handles when a user sends a new message.'''
+	if not session.has_key("user_id"):
+		return
                     
 	# Add message to the database
 	json["stamp"] = str(datetime.datetime.now())
@@ -103,10 +110,10 @@ def new_mesage(json):
                 # a room for each connection.
                 for sid in sids:
                     print "emit to", sid
-		    emit("server", json, room=sid)
+		    emit("add message", json, room=sid)
 
 		# Emit back to user
-		emit("server", json)
+		emit("add message", json)
 
 	    # Otherwise, whoever user wants to chat with is not online
 	    else:
@@ -114,12 +121,12 @@ def new_mesage(json):
 		json["alert"] = "buddy not online"
                 
 		# Emit back to user
-		emit("server", json)
+		emit("add message", json)
                 
 	# Public chat
 	else:
 	    # Broadcast on all connections
-	    emit("server", json, broadcast=True)
+	    emit("add message", json, broadcast=True)
 
 
 @app.teardown_appcontext
@@ -208,7 +215,7 @@ def users():
 def chat():
     """Redirect to chat page"""
     cur_user = get_user(session["user_id"])
-    messages = query_db("SELECT * FROM messages WHERE buddy=?", [""])[-10:]
+    messages = query_db("SELECT * FROM messages WHERE buddy=? ORDER BY stamp DESC LIMIT 10", [""])
     return render_template("chat.html", user=cur_user, dest="", messages=messages)
 
 @app.route("/private/<username>", methods=["GET"])
@@ -228,8 +235,10 @@ def private(username):
 def discussions():
     """Redirect to about page"""
     user = get_user(session["user_id"])
+    posts = query_db("SELECT * FROM posts ORDER BY stamp DESC")
     # Redirect user to about page
-    return render_template("discussions.html", user=user)
+    print("Posts:", posts)
+    return render_template("discussions.html", user=user, posts=reversed(posts))
 
 
 @app.route("/register", methods=["GET", "POST"])

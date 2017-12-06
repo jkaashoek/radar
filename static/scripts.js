@@ -10,6 +10,7 @@ $(document).ready(function() {
   var buddy = $('.buddy').text();
   var $messages = $('.messages');
   var $notifications = $('.notifications');
+  var $posts = $('.posts');
   var $window = $(window);
   var socket;
 
@@ -31,7 +32,11 @@ $(document).ready(function() {
       console.log("disconnected");
     })
 
-    socket.on("server", function(data) {
+    socket.on(('add post'), function(data){
+      addPost(data);
+    })
+
+    socket.on("add message", function(data) {
       console.log("message from server");
 
       // Private chat and both users are on page
@@ -59,20 +64,37 @@ $(document).ready(function() {
     })
   }
 
-
-  $window.keydown(function (event) {
-    var text = $("#inputMessage").val();
-    if(event.which == 13 && text != "") {
-      $("#inputMessage").val('');
+  $("#submit").click(function() {
+    var text = $("#postText").val();
+    console.log(text, text=="");
+    if (text != "") {
+      $("#postText").val('');
       var data = {
         username: username,
-        message: text,
-        buddy: buddy,
+        text: text
       };
-      console.log("DATA: ", data);
-      socket.emit("client", data);
+      console.log("DATA: ", data)
+      socket.emit("post", data)
     }
   })
+
+  if ($(".inputMessage")[0]) {
+    document.getElementById("inputMessage")
+      .addEventListener("keyup", function(event) {
+        console.log("HERE!")
+        var text = $("#inputMessage").val();
+        if(event.keyCode === 13 && text != "") {
+          $("#inputMessage").val('');
+          var data = {
+            username: username,
+            message: text,
+            buddy: buddy,
+          };
+          //console.log("DATA: ", data);
+          socket.emit("new message", data);
+        }
+      })
+  }
 
   $(".btnmsg").click(function() {
     console.log("link clicked");
@@ -82,11 +104,33 @@ $(document).ready(function() {
 
   })
   
-    $('.username').each(function(){
-	var n = $(this).text()
-	$(this).css('color', getUsernameColor(n))
-	console.log("username", n, $(this))
-    });
+  $('.username').each(function(){
+    var n = $(this).text();
+    $(this).css('color', getUsernameColor(n));
+    console.log("username", n, $(this));
+  });
+
+  function addPost(data) {
+    console.log($posts);
+    var $usernameDiv = $('<span class="postUsername"/>')
+      .text(data.username)
+      .css('color', getUsernameColor(data.username));
+
+    var d = new Date(data.stamp);
+    console.log(d)
+    var t = " (" + d.getHours()+ ":" + d.getMinutes()+")"
+    var $stampDiv = $('<span class="postStamp">')
+       .text(t);
+
+    var $postBodyDiv = $('<span class="postBody">')
+      .text(data.text);
+
+    var $postDiv = $('<li class="post"/>')
+      .data('username', data.username)
+      .append($usernameDiv, " ", $stampDiv, "<br> ", $postBodyDiv);
+
+    $posts.append($postDiv);
+  }
     
   function addChatMessage(data) {
     console.log(data);
@@ -101,7 +145,7 @@ $(document).ready(function() {
     var d = new Date(data.stamp);
     var t = " (" + d.getHours()+ ":" + d.getMinutes()+")"
     var $stampDiv = $('<span class="stamp">')
-	.text(t);
+	     .text(t);
 
     var $messageAlertDiv = $('<span class="alertBody">')
       .text(data.alert)
@@ -109,7 +153,7 @@ $(document).ready(function() {
 
     var $messageDiv = $('<li class="message"/>')
       .data('username', data.username)
-	.append($usernameDiv, " ", $messageBodyDiv,  $stampDiv, "<br>", $messageAlertDiv);
+      .append($usernameDiv, " ", $messageBodyDiv,  $stampDiv, "<br>", $messageAlertDiv);
 
     $messages.append($messageDiv);
   }
