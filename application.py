@@ -44,6 +44,7 @@ class ActiveUsers():
     def get_sids(self, name):
         return self.active_users[name]
 
+
 active_users = ActiveUsers()
 socketio = SocketIO(app)
 Session(app)
@@ -60,12 +61,14 @@ def connected(json):
 	if session.has_key("user_id"):
 		active_users.add_user(json["data"], request.sid)
 
+
 @socketio.on("disconnect")
 def disconnect():
 	"""Remove user from active users when they disconnect."""
 	if session.has_key("user_id"):
 		user = get_user(session["user_id"])
 		active_users.del_user(user, request.sid)
+
 
 @socketio.on("post")
 def new_post(json):
@@ -80,6 +83,7 @@ def new_post(json):
 
 	# Broadcast emit to all users
 	emit("add post", json, broadcast=True)
+
 
 @socketio.on("new message")
 def new_message(json):
@@ -137,6 +141,7 @@ def index():
 	# Render template with my_prof set to True because user is accessing own profile
    	return render_template("index.html", user=user, my_prof=True)
 
+
 @app.route("/profile/<user_id>")
 @login_required
 def profile(user_id):
@@ -150,6 +155,7 @@ def profile(user_id):
 
 	# Render template with my_prof set to Flase because user is accessing someone else's profile
    	return render_template("index.html", user=user, view_user=view_user, my_prof=False)
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -186,6 +192,7 @@ def login():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("login.html", user='')
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -224,6 +231,7 @@ def register():
         return render_template("register.html", user='')
 
 
+
 @app.route("/logout")
 def logout():
     """Log user out"""
@@ -234,10 +242,12 @@ def logout():
     # Redirect user to login form
     return redirect("/")
 
+
 @app.route("/about", methods=["GET"])
 def about():
     """Redirect to about page"""
     return render_template("about.html", user='')
+
 
 @app.route("/users", methods=["GET"])
 @login_required
@@ -256,6 +266,7 @@ def users():
     # Redirect user to about page
     return render_template("users.html", users=users, curr_user=user_id, user=user)
 
+
 @app.route("/chat", methods=["GET"])
 @login_required
 def chat():
@@ -269,6 +280,7 @@ def chat():
 
     # Redirect to public chat page
     return render_template("chat.html", user=cur_user, dest="", messages=messages)
+
 
 @app.route("/private/<username>", methods=["GET"])
 @login_required
@@ -287,6 +299,7 @@ def private(username):
     
     # Redirect to private chat page
     return render_template("chat.html", user=cur_user, dest=username, messages=reversed(messages))
+
 
 @app.route("/discussions", methods=["GET"])
 @login_required
@@ -307,6 +320,7 @@ def errorhandler(e):
     """Handle error"""
     return apology(e.name, e.code)
 
+
 # filter to print timestap for messages in templates
 @app.template_filter('strftime')
 def _jinja2_filter_datetime(date, fmt=None):
@@ -314,6 +328,7 @@ def _jinja2_filter_datetime(date, fmt=None):
     native = date.replace(tzinfo=None)
     format='%H:%M'
     return native.strftime(format) 
+    
 
 @app.teardown_appcontext
 def close_connection(exception):
