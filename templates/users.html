@@ -6,16 +6,22 @@
 
 {% block main %}
     <table align="center" class="table borderless">
-    	<tr><td></td><td>Select a user to begin a chat</td></tr>
-    	<td></td><th>Users</th>
+    	<tr>
+            <td></td>
+            <td>Select a user to begin a chat</td>
+        </tr>
+    	<tr>
+            <td></td>
+            <th>Users</th>
+        </tr>
     	{% for u in users %}
-    	{% if u.id != curr_user %}
-    		<tr>
-    			<td id="{{ u.id }}"> {{ u.username }}</td>
-    			<td><a href="/profile/{{u.id}}">View profile</a> </td>
-    			<td><a href="/private/{{u.username}}">Enter Private Chat</a> </td>
-    		</tr>
-    	{% endif %}
+            {% if u.id != curr_user %}
+                <tr>
+                    <td id="{{ u.id }}"> {{ u.username }}</td>
+                    <td><a href="/profile/{{u.id}}">View profile</a> </td>
+                    <td><a href="/private/{{u.username}}">Enter Private Chat</a> </td>
+                </tr>
+            {% endif %}
     	{% endfor %}
     </table>
 {% endblock %}

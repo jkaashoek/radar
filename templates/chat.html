@@ -45,18 +45,16 @@
 		      	<ul class="messages">
 		      		{% for message in messages %}
 	      				<li class="message">
-	      					<span class="username">{{ message.username }}</span>
-	      					<span class="messageBody">{{ message.text }}</span>
-						<span class="stamp">&nbsp({{ message.stamp|strftime() }})</span>
-
+                            <span class="username">{{ message.username }}</span>
+                            <span class="messageBody">{{ message.text }}</span>
+                            <span class="stamp">&nbsp({{ message.stamp|strftime() }})</span>
+                        </li>
 		        	{% endfor %}
                 </ul>
 		      </div>
 		      <input id="inputMessage" class="inputMessage" placeholder="Type here..."/>
-		      <!-- <button id="trigger">submit</button> -->
 		    </li>
 		</ul>
     </body>
-
 </html>
 
