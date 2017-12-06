@@ -47,7 +47,8 @@
 	      				<li class="message">
 	      					<span class="username">{{ message.username }}</span>
 	      					<span class="messageBody">{{ message.text }}</span>
-	      				</li>
+						<span class="stamp">&nbsp({{ message.stamp|strftime() }})</span>
+
 		        	{% endfor %}
                 </ul>
 		      </div>

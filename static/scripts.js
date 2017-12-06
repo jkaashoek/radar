@@ -35,8 +35,8 @@ $(document).ready(function() {
       console.log("message from server");
 
       // Private chat and both users are on page
-      if (buddy != "" && data.username == buddy) {
-        console.log("Pchat both")
+      if (buddy != "" && data.username == buddy && data.buddy != "") {
+          console.log("Pchat both", buddy)
         addChatMessage(data);
       }
 
@@ -92,6 +92,13 @@ $(document).ready(function() {
   //   socket.emit("client", data);
   // })
 
+
+    $('.username').each(function(){
+	var n = $(this).text()
+	$(this).css('color', getUsernameColor(n))
+	console.log("username", n, $(this))
+    });
+    
   function addChatMessage(data) {
     console.log(data);
     console.log($messages);
@@ -102,13 +109,18 @@ $(document).ready(function() {
     var $messageBodyDiv = $('<span class="messageBody">')
       .text(data.message);
 
+    var d = new Date(data.stamp);
+    var t = " (" + d.getHours()+ ":" + d.getMinutes()+")"
+    var $stampDiv = $('<span class="stamp">')
+	.text(t);
+
     var $messageAlertDiv = $('<span class="alertBody">')
       .text(data.alert)
       .css('color', '#FF0000');
 
     var $messageDiv = $('<li class="message"/>')
       .data('username', data.username)
-      .append($usernameDiv, " ", $messageBodyDiv, "<br>", $messageAlertDiv);
+	.append($usernameDiv, " ", $messageBodyDiv,  $stampDiv, "<br>", $messageAlertDiv);
 
     $messages.append($messageDiv);
   }
@@ -116,14 +128,29 @@ $(document).ready(function() {
   function addNotification(data) {
     console.log(data);
 
-    var $notificationDiv = $('<span class="notif"/>')
-      .append(data.username, " wants to chat with you.", "<br>")
-      .css('color', "blue");
+      var $input = $('<input class="notif btn-primary" type="button" value="xxxx" />')
 
-    $notifications.append($notificationDiv);
+      $notifications.append($input);
+
+        $(".notif").click(function() {
+	    console.log("notify clicked");
+	    id = $(this).attr('name');
+	    console.log(id)
+	    socket.emit("private message", id)
+	})
 
   }
 
+
+  $(".notif").click(function() {
+    console.log("notify clicked");
+    id = $(this).attr('name');
+    console.log(id)
+    socket.emit("private message", id)
+
+  })
+
+    
   function getUsernameColor (username) {
     // Compute hash code
     var hash = 7;

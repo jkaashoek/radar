@@ -7,6 +7,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 
 from helpers import apology, login_required, get_db, make_dicts, query_db, insert, get_user
+import datetime
+from dateutil import parser
+       
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -21,6 +25,14 @@ active_users = {}
 
 if __name__ == '__main__':
     socketio.run(app)
+
+
+@app.template_filter('strftime')
+def _jinja2_filter_datetime(date, fmt=None):
+    date = parser.parse(date)
+    native = date.replace(tzinfo=None)
+    format='%H:%M'
+    return native.strftime(format) 
 
 @socketio.on("connected")
 def connected(json):
@@ -44,7 +56,8 @@ def new_mesage(json):
 	'''Handles when a user sends a new message'''
 
 	# Add message to the database
-	result = insert("messages", ("username", "buddy", "text"), (json["username"], json["buddy"], json["message"]))
+	json["stamp"] = str(datetime.datetime.now())
+	result = insert("messages", ("username", "buddy", "text", "stamp"), (json["username"], json["buddy"], json["message"], json["stamp"]))
 
 	# Alert if the user is no online
 	json["alert"] = ""
