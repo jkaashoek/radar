@@ -138,7 +138,6 @@ $(document).ready(function() {
   $('.username').each(function(){
     var n = $(this).text();
     $(this).css('color', getUsernameColor(n));
-    console.log("username", n, $(this));
   });
 
   // Add a post to html
