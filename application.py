@@ -24,37 +24,56 @@ if __name__ == '__main__':
 
 @socketio.on("connected")
 def connected(json):
-	print("join", json, request.sid)
-	print (json['data'])
+	'''Adds user to active user once a user connects'''
 	active_users[json['data']] = request.sid
 
 @socketio.on("disconnect")
 def disconnect():
-	print("disconnected", request.sid)
+	'''Remove user from active users when they disconnect'''
+
+	# Go through active users
 	for key, val in active_users.items():
+
+		# Delete user once user is found
 		if val == request.sid:
 			print("user left", key)
 			del active_users[key]
 
-@socketio.on("connect")
-def connect():
-	print("connect")
-
 @socketio.on('client')
 def new_mesage(json):
-	print('received json: ' + str(json))
+	'''Handles when a user sends a new message'''
 
+	# Add message to the database
 	result = insert("messages", ("username", "buddy", "text"), (json["username"], json["buddy"], json["message"]))
 
+	# Alert if the user is no online
 	json["alert"] = ""
+
+	# If the person the user wishes to chat with is online
 	if json["buddy"] in active_users:
+
+		# Generate a room
 		room = active_users[json["buddy"]]
+
+		# Emit to user wishing to chat with the correct room
 		emit("server", json, room=room)
+
+		# Emit back to user
 		emit("server", json)
+
+	# If the user is entering the general chat
 	elif json["buddy"] == '':
+
+		# Enter room that will broadcast to all users
 		emit("server", json, broadcast=True)
+
+	# Otherwise, whoever user wants to chat with is not online
 	else:
+
+		# Add alert to json
 		json["alert"] = "buddy not online"
+
+		# Emit back to user
 		emit("server", json)
 
 @app.teardown_appcontext
