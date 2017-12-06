@@ -82,17 +82,6 @@ $(document).ready(function() {
 
   })
   
-  // $("#trigger").click(function() {
-  //   console.log("clicked");
-  //   var text = $("#inputMessage").val();
-  //   var data = {
-  //       username: username,
-  //       message: text
-  //   };
-  //   socket.emit("client", data);
-  // })
-
-
     $('.username').each(function(){
 	var n = $(this).text()
 	$(this).css('color', getUsernameColor(n))
@@ -126,31 +115,23 @@ $(document).ready(function() {
   }
 
   function addNotification(data) {
-    console.log(data);
+     console.log("add notify", data);
 
-      var $input = $('<input class="notif btn-primary" type="button" value="xxxx" />')
+     var $input = $('<input class="notif btn-primary" type="button" name="' + data.username + '"value="join" />')
+     var $notificationDiv = $('<span class="notif"/>')
+	 .append("Chat request from ", data.username)
+      .css('color', "blue");
 
-      $notifications.append($input);
+      $notifications.append($notificationDiv, " ", $input, "<br>");
 
         $(".notif").click(function() {
-	    console.log("notify clicked");
 	    id = $(this).attr('name');
-	    console.log(id)
-	    socket.emit("private message", id)
+	    console.log("notify clicked", id);
+	    window.location.href = "private/" + data.username;
 	})
 
   }
 
-
-  $(".notif").click(function() {
-    console.log("notify clicked");
-    id = $(this).attr('name');
-    console.log(id)
-    socket.emit("private message", id)
-
-  })
-
-    
   function getUsernameColor (username) {
     // Compute hash code
     var hash = 7;

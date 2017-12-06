@@ -10,23 +10,50 @@ from helpers import apology, login_required, get_db, make_dicts, query_db, inser
 import datetime
 from dateutil import parser
        
-
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+
+# A class to track all connected users.  Everytime a user switches to another
+# page, the table of active users will be updated, because a user will
+# disconnect and reconnect on a page switch.  If we to write a single-page
+# application, we could avoid these reconnect/disconnects. A user might be
+# logged in several times (e.g., on different machines), so we maintain a list
+# of connections per user.
+class ActiveUsers():
+
+    def __init__(self):
+       self.active_users = {}
+
+    def add_user(self, name, sid):
+        print "add_user", name, sid
+        if not self.active_users.has_key(name):
+            self.active_users[name] = []
+        self.active_users[name].append(request.sid)
+
+    def del_user(self, name, sid):
+        print "del_user", name, sid
+        if self.active_users.has_key(name):
+            self.active_users[name].remove(sid)
+        print self.active_users
+
+    def is_connected(self, name):
+        return name in self.active_users
+
+    def get_sids(self, name):
+        return self.active_users[name]
+
+active_users = ActiveUsers()
 socketio = SocketIO(app)
 Session(app)
-
-active_users = {}
 
 if __name__ == '__main__':
     socketio.run(app)
 
-
+# filter to print timestap for messages in templates
 @app.template_filter('strftime')
 def _jinja2_filter_datetime(date, fmt=None):
     date = parser.parse(date)
@@ -34,27 +61,30 @@ def _jinja2_filter_datetime(date, fmt=None):
     format='%H:%M'
     return native.strftime(format) 
 
+
+# Handlers for sockio events. Since anyone can setup a socketio to the server,
+# we need check if user is logged in, but we are happy to take disconnects.
 @socketio.on("connected")
 def connected(json):
-	'''Adds user to active user once a user connects'''
-	active_users[json['data']] = request.sid
+	'''Adds user to active user once a user connects.'''
+        print("user wants to join", json["data"], request.sid)
+        if session.has_key("user_id"):
+            active_users.add_user(json["data"], request.sid)
 
 @socketio.on("disconnect")
 def disconnect():
-	'''Remove user from active users when they disconnect'''
-
-	# Go through active users
-	for key, val in active_users.items():
-
-		# Delete user once user is found
-		if val == request.sid:
-			print("user left", key)
-			del active_users[key]
+	'''Remove user from active users when they disconnect.'''
+        if session.has_key("user_id"):
+            user = get_user(session["user_id"])
+            active_users.del_user(user, request.sid)
 
 @socketio.on('client')
 def new_mesage(json):
-	'''Handles when a user sends a new message'''
+	'''Handles when a user sends a new message.'''
 
+        if not session.has_key("user_id"):
+            return
+                    
 	# Add message to the database
 	json["stamp"] = str(datetime.datetime.now())
 	result = insert("messages", ("username", "buddy", "text", "stamp"), (json["username"], json["buddy"], json["message"], json["stamp"]))
@@ -62,32 +92,35 @@ def new_mesage(json):
 	# Alert if the user is no online
 	json["alert"] = ""
 
-	# If the person the user wishes to chat with is online
-	if json["buddy"] in active_users:
+	# If private and the person the user wishes to chat with is online
+	if json["buddy"] != "":
+            if active_users.is_connected(json["buddy"]):
 
-		# Generate a room
-		room = active_users[json["buddy"]]
+		# Lookup connections on which users is connected
+		sids = active_users.get_sids(json["buddy"])
 
-		# Emit to user wishing to chat with the correct room
-		emit("server", json, room=room)
+		# Emit to user wishing to chat on each connection.  Flask sets up
+                # a room for each connection.
+                for sid in sids:
+                    print "emit to", sid
+		    emit("server", json, room=sid)
 
 		# Emit back to user
 		emit("server", json)
 
-	# If the user is entering the general chat
-	elif json["buddy"] == '':
-
-		# Enter room that will broadcast to all users
-		emit("server", json, broadcast=True)
-
-	# Otherwise, whoever user wants to chat with is not online
-	else:
-
+	    # Otherwise, whoever user wants to chat with is not online
+	    else:
 		# Add alert to json
 		json["alert"] = "buddy not online"
-
+                
 		# Emit back to user
 		emit("server", json)
+                
+	# Public chat
+	else:
+	    # Broadcast on all connections
+	    emit("server", json, broadcast=True)
+
 
 @app.teardown_appcontext
 def close_connection(exception):
