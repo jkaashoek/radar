@@ -10,7 +10,7 @@
 			{% for post in posts %}
   				<li class="post">
 					<span class="username">{{ post.username }}</span>
-					<span class="stamp">&nbsp({{ post.stamp|strftime() }})</span> <br>
+					<span class="postStamp">&nbsp({{ post.stamp|strftime() }})</span> <br>
 					<span class="postBody">{{ post.text }}</span>
 				</li>
         	{% endfor %}
