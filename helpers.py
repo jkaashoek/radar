@@ -75,3 +75,9 @@ def get_user(user_id):
     if row == None:
         return ''
     return row["username"]
+
+
+def get_userrow(username):
+    """Gets a user from database"""
+    row = query_db("SELECT username FROM users WHERE username=?", [username], one=True)
+    return row

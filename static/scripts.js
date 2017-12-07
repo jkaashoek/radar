@@ -77,7 +77,9 @@ $(document).ready(function() {
   }
 
   // User is clicks submit for a post
-  $("#submit").click(function() {
+  $("#postSubmit").click(function() {
+
+    console.log("in here")
 
     // Get text from post
     var text = $("#postText").val();

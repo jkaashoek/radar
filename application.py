@@ -8,7 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from dateutil import parser
 import sqlite3, datetime
 
-from helpers import apology, login_required, get_db, query_db, insert, get_user
+from helpers import apology, login_required, get_db, query_db, insert, get_user, get_userrow
 from connections import ActiveUsers
 
 debug = True
@@ -157,11 +157,13 @@ def login():
 
         # Ensure username was submitted
         if not request.form.get("username"):
-            return apology("must provide username", 403)
+            flash("Please provide username")
+            return render_template("login.html", user='')
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return apology("must provide password", 403)
+            flash("Please provide password")
+            return render_template("login.html", user='')
 
         # Query database for username
         rows = query_db("SELECT * FROM users WHERE username = ?",
@@ -169,7 +171,8 @@ def login():
 
         # Ensure username exists and password is correct
         if rows == None or not check_password_hash(rows["hash"], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
+            flash("Invalid username or password")
+            return render_template("login.html", user='')
    
         # Remember which user has logged in
         session["user_id"] = rows["id"]
@@ -189,25 +192,29 @@ def register():
 
         # Ensure username was submitted
         if not request.form.get("username"):
-            return apology("must provide username")
+            flash("Please provide username")
+            return render_template("register.html", user='')
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return apology("must provide password")
+            flash("Please provide password")
+            return render_template("register.html", user='')
 
         # Ensure passwords match
         elif not request.form.get("password") == request.form.get("confirmation"):
-            return apology("passwords do not match")
+            flash("Passwords do not match")
+            return render_template("register.html", user='')
+
+        # Handle case if username already exists
+        elif get_userrow(request.form.get("username")) != None:
+            flash("Username already exists")
+            return render_template("register.html", user='')
 
         # Generate password hash
         hash = generate_password_hash(request.form.get("password"))
 
         # Add user into users table
         result = insert("users", ("username", "hash"), (request.form.get("username"), hash))
-
-        # Handle case if username already exists
-        if not result:
-            return apology("username already exists")
 
         # Set the user's id
         session["user_id"] = result
@@ -290,7 +297,7 @@ def private(username):
 
 
 @app.route("/discussions", methods=["GET"])
-@login_required
+
 def discussions():
     """Redirect to discussions page"""
 
