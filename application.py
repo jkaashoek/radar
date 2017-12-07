@@ -1,4 +1,4 @@
-# Impots
+# Imports
 from flask import Flask, flash, redirect, render_template, request, session, g
 from flask_socketio import SocketIO, send, emit
 from flask_session import Session
@@ -8,7 +8,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from dateutil import parser
 import sqlite3, datetime
 
-from helpers import apology, login_required, get_db, make_dicts, query_db, insert, get_user
+from helpers import apology, login_required, get_db, query_db, insert, get_user
+from connections import ActiveUsers
 
 debug = True
 app = Flask(__name__)
@@ -18,32 +19,6 @@ app.config['SECRET_KEY'] = 'secret!'
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-
-# A class to track all connected users.  Everytime a user switches to another
-# page, the table of active users will be updated, because a user will
-# disconnect and reconnect on a page switch.  If we to write a single-page
-# application, we could avoid these reconnect/disconnects. A user might be
-# logged in several times (e.g., on different machines), so we maintain a list
-# of connections per user.
-class ActiveUsers():
-
-    def __init__(self):
-       self.active_users = {}
-
-    def add_user(self, name, sid):
-        if not self.active_users.has_key(name):
-            self.active_users[name] = []
-        self.active_users[name].append(request.sid)
-
-    def del_user(self, name, sid):
-        if self.active_users.has_key(name):
-            self.active_users[name].remove(sid)
-
-    def is_connected(self, name):
-        return name in self.active_users
-
-    def get_sids(self, name):
-        return self.active_users[name]
 
 
 active_users = ActiveUsers()

@@ -55,11 +55,6 @@ def query_db(query, args=(), one=False):
     return (rv[0] if rv else None) if one else rv
 
 
-def make_dicts(cursor, row):
-    return dict((cursor.description[idx][0], value)
-                for idx, value in enumerate(row))
-
-
 def insert(table, fields=(), values=()):
     """Handles database inserts"""
     query = 'INSERT INTO %s (%s) VALUES (%s)' % (
