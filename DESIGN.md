@@ -154,8 +154,8 @@ templates/: HTML for webpages
 # Reflections.
 
 I am pleased with the overall functionality of the site. Although if I were to
-go back, I would likely use meteor instead of flask because meteor applications
-are single page, which would be cleaner for SocketIO.
+go back, I would make turn the client side into a single page application,
+which would be cleaner for SocketIO.
 
 Overall, SocketIO introduced a number of challenging errors, and often made it
 difficult to test, as multiple browsers would have to be open in order to chat

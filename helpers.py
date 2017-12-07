@@ -6,6 +6,7 @@ import sqlite3
 
 DATABASE = 'radar.db'
 
+
 def login_required(f):
     """
     Decorate routes to require login.

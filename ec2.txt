@@ -52,5 +52,3 @@ application.debug = True
 # copy database:
 
 $ scp -i testvm1.pem radar.db ubuntu@ec2-54-164-222-23.compute-1.amazonaws.com:~/
-
-$

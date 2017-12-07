@@ -12,7 +12,6 @@ import datetime
 from helpers import login_required, get_db, query_db, insert, get_user, get_userrow
 from connections import ActiveUsers
 
-debug = True
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 
@@ -50,6 +49,10 @@ def disconnect():
 @socketio.on("post")
 def new_post(json):
     """Handle a new post from discussion.html"""
+
+    # Only allow posting if user is logged in
+    if not session.has_key("user_id"):
+        return
 
     # Add time stamp to json data
     json["stamp"] = str(datetime.datetime.now())
@@ -315,4 +318,3 @@ def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
-

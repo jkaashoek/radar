@@ -216,13 +216,13 @@ $(document).ready(function() {
         // Get id
         id = $(this).attr('name');
 
-        // Send to chat rooom
+        // Send to chat room
         window.location.href = "private/" + data.username;
       })
 
   }
 
-  // Colors username differntly
+  // Colors username differently
   function getUsernameColor (username) {
 
     // Compute hash code

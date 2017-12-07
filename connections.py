@@ -1,4 +1,4 @@
-# A class to track all connected users.  Everytime a user switches to another
+# A class to track all connected users.  Every time a user switches to another
 # page, the table of active users will be updated, because a user will
 # disconnect and reconnect on a page switch.  If we to write a single-page
 # application, we could avoid these reconnect/disconnects. A user might be
