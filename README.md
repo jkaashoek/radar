@@ -59,6 +59,6 @@ The Discussion tab is a real-time feed of posts (articles and thoughts), similar
 to Facebook news feed. You can post new posts by typing them in the box at the
 bottom of the page.  The posts are also stored in a database and the page
 displays recent ones.  The intent is also have support for comments and
-searching through past posts and chats, but that isn't there yet.
+searching through past posts and chats, but that is not there yet.
 
 

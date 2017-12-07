@@ -1,3 +1,5 @@
+// Inspiration for chat messaging and colors from SocketIO demo: https://socket.io/demos/chat/
+
 $(document).ready(function() {
 
   // Color for styling
@@ -51,7 +53,8 @@ $(document).ready(function() {
       addPost(data);
     })
 
-    // User sends a message in a chat
+    // User sends a message in a chat. NOTE: The following if block could be condensed
+    // but is left the way it is for clarity. 
     socket.on("add message", function(data) {
 
       // Private chat and both users are on page
@@ -71,15 +74,13 @@ $(document).ready(function() {
 
       // Private chat and one user is not on chat page 
       else if (data.buddy != "") {
-        addNotification(data)
+        addNotification(data);
       }
     })
   }
 
   // User is clicks submit for a post
   $("#postSubmit").click(function() {
-
-    console.log("in here")
 
     // Get text from post
     var text = $("#postText").val();
@@ -97,7 +98,7 @@ $(document).ready(function() {
       };
 
       // Tell server there is a new post
-      socket.emit("post", data)
+      socket.emit("post", data);
     }
   })
 
@@ -160,7 +161,7 @@ $(document).ready(function() {
       .append($usernameDiv, " ", $stampDiv, "<br> ", $postBodyDiv);
 
     // Add post to list of posts
-    $posts.prepend($postDiv)
+    $posts.prepend($postDiv);
   }
   
   // Add a chat message to html
@@ -177,7 +178,7 @@ $(document).ready(function() {
 
     // Add the time the message was sent
     var d = new Date(data.stamp);
-    var t = " (" + d.getHours()+ ":" + d.getMinutes()+")"
+    var t = " (" + d.getHours()+ ":" + d.getMinutes()+")";
     var $stampDiv = $('<span class="stamp">')
 	     .text(t);
 
@@ -199,7 +200,7 @@ $(document).ready(function() {
   function addNotification(data) {
 
       // Add join button to send user to private chat
-      var $input = $('<input class="notif btn-primary" type="button" name="' + data.username + '"value="join" />')
+      var $input = $('<input class="notif btn-primary" type="button" name="' + data.username + '"value="join" />');
       
       // Add notification message
       var $notificationDiv = $('<span class="notif"/>')

@@ -4,10 +4,12 @@
 # application, we could avoid these reconnect/disconnects. A user might be
 # logged in several times (e.g., on different machines), so we maintain a list
 # of connections per user.
+
+
 class ActiveUsers():
 
     def __init__(self):
-       self.active_users = {}
+        self.active_users = {}
 
     def add_user(self, name, sid):
         if not self.active_users.has_key(name):

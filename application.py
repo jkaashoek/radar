@@ -6,9 +6,10 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 from dateutil import parser
-import sqlite3, datetime
+import sqlite3
+import datetime
 
-from helpers import apology, login_required, get_db, query_db, insert, get_user, get_userrow
+from helpers import login_required, get_db, query_db, insert, get_user, get_userrow
 from connections import ActiveUsers
 
 debug = True
@@ -33,86 +34,76 @@ if __name__ == '__main__':
 # we need check if user is logged in, but we are happy to take disconnects.
 @socketio.on("connected")
 def connected(json):
-	"""Adds user to active user once a user connects."""
-
-        if debug:
-            print("connected", json)
-
-	if session.has_key("user_id"):
-		active_users.add_user(json["data"], request.sid)
+    """Adds user to active user once a user connects."""
+    if session.has_key("user_id"):
+        active_users.add_user(json["data"], request.sid)
 
 
 @socketio.on("disconnect")
 def disconnect():
-	"""Remove user from active users when they disconnect."""
-
-        if debug:
-            print("disconnect")
-
-	if session.has_key("user_id"):
-		user = get_user(session["user_id"])
-		active_users.del_user(user, request.sid)
+    """Remove user from active users when they disconnect."""
+    if session.has_key("user_id"):
+        user = get_user(session["user_id"])
+        active_users.del_user(user, request.sid)
 
 
 @socketio.on("post")
 def new_post(json):
-	"""Handle a new post from discussion.html"""
+    """Handle a new post from discussion.html"""
 
-	# Add time stamp to json data
-	json["stamp"] = str(datetime.datetime.now())
+    # Add time stamp to json data
+    json["stamp"] = str(datetime.datetime.now())
 
-	# Insert post into database
-	result = insert("posts", ("username", "text", "stamp"), 
-					(json["username"], json["text"], json["stamp"]))
+    # Insert post into database
+    result = insert("posts", ("username", "text", "stamp"),
+                    (json["username"], json["text"], json["stamp"]))
 
-	# Broadcast emit to all users
-	emit("add post", json, broadcast=True)
+    # Broadcast emit to all users
+    emit("add post", json, broadcast=True)
 
 
 @socketio.on("new message")
 def new_message(json):
-	"""Handles when a user sends a new message"""
-	if not session.has_key("user_id"):
-		return
+    """Handles when a user sends a new message"""
+    if not session.has_key("user_id"):
+        return
 
-        if debug:
-            print("message", json)
+    # Add message to the database
+    json["stamp"] = str(datetime.datetime.now())
+    result = insert("messages", ("username", "buddy", "text", "stamp"),
+                    (json["username"], json["buddy"], json["message"], json["stamp"]))
 
-	# Add message to the database
-	json["stamp"] = str(datetime.datetime.now())
-	result = insert("messages", ("username", "buddy", "text", "stamp"), (json["username"], json["buddy"], json["message"], json["stamp"]))
+    # Alert if the user is no online
+    json["alert"] = ""
 
-	# Alert if the user is no online
-	json["alert"] = ""
+    # If private and the person the user wishes to chat with is online
+    if json["buddy"] != "":
+        if active_users.is_connected(json["buddy"]):
 
-	# If private and the person the user wishes to chat with is online
-	if json["buddy"] != "":
-		if active_users.is_connected(json["buddy"]):
+            # Lookup connections on which users is connected
+            sids = active_users.get_sids(json["buddy"])
 
-			# Lookup connections on which users is connected
-			sids = active_users.get_sids(json["buddy"])
+            # Emit to user wishing to chat on each connection.  Flask sets up a room for each connection.
+            for sid in sids:
+                emit("add message", json, room=sid)
 
-			# Emit to user wishing to chat on each connection.  Flask sets up a room for each connection.
-                        for sid in sids:
-			    emit("add message", json, room=sid)
+            # Emit back to user
+            emit("add message", json)
 
-			# Emit back to user
-			emit("add message", json)
+        # Otherwise, whoever user wants to chat with is not online
+        else:
 
-		# Otherwise, whoever user wants to chat with is not online
-		else:
+            # Add alert to json
+            json["alert"] = "buddy not online"
 
-			# Add alert to json
-			json["alert"] = "buddy not online"
-                
-			# Emit back to user
-			emit("add message", json)
-                
-	# Public chat
-	else:
+            # Emit back to user
+            emit("add message", json)
 
-	    # Broadcast on all connections
-	    emit("add message", json, broadcast=True)
+    # Public chat
+    else:
+
+        # Broadcast on all connections
+        emit("add message", json, broadcast=True)
 
 
 # Flask code
@@ -121,28 +112,28 @@ def new_message(json):
 @app.route("/")
 @login_required
 def index():
-	"""Redirect to user's homepage"""
+    """Redirect to user's homepage"""
 
-	# Get user's id
-	user = get_user(session["user_id"])
+    # Get user's id
+    user = get_user(session["user_id"])
 
-	# Render template with my_prof set to True because user is accessing own profile
-   	return render_template("index.html", user=user, my_prof=True)
+    # Render template with my_prof set to True because user is accessing own profile
+    return render_template("index.html", user=user, my_prof=True)
 
 
 @app.route("/profile/<user_id>")
 @login_required
 def profile(user_id):
-	"""Redirect to another user's homepage"""
+    """Redirect to another user's homepage"""
 
-	# Get the information of the person the user wishes to look at
-	view_user = query_db("SELECT * FROM users WHERE id=?", [user_id], one=True)
+    # Get the information of the person the user wishes to look at
+    view_user = query_db("SELECT * FROM users WHERE id=?", [user_id], one=True)
 
-	# Get the user's id
-	user = session["user_id"]
+    # Get the user's id
+    user = session["user_id"]
 
-	# Render template with my_prof set to Flase because user is accessing someone else's profile
-   	return render_template("index.html", user=user, view_user=view_user, my_prof=False)
+    # Render template with my_prof set to Flase because user is accessing someone else's profile
+    return render_template("index.html", user=user, view_user=view_user, my_prof=False)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -167,13 +158,13 @@ def login():
 
         # Query database for username
         rows = query_db("SELECT * FROM users WHERE username = ?",
-                          [request.form.get("username")], one=True)
+                        [request.form.get("username")], one=True)
 
         # Ensure username exists and password is correct
         if rows == None or not check_password_hash(rows["hash"], request.form.get("password")):
             flash("Invalid username or password")
             return render_template("login.html", user='')
-   
+
         # Remember which user has logged in
         session["user_id"] = rows["id"]
 
@@ -226,7 +217,6 @@ def register():
         return render_template("register.html", user='')
 
 
-
 @app.route("/logout")
 def logout():
     """Log user out"""
@@ -249,7 +239,7 @@ def about():
 def users():
     """Redirect to users page"""
 
-    # Get all users 
+    # Get all users
     users = query_db("SELECT * FROM users")
 
     # Get current user id
@@ -285,19 +275,18 @@ def private(username):
     # Get current user
     cur_user = get_user(session["user_id"])
 
-    # Get user current user wishes to chat with 
+    # Get user current user wishes to chat with
     user = query_db("SELECT * FROM users WHERE id=?", [session["user_id"]], one=True)
 
     # Get 10 most recent messages from conversation between these two users
     messages = query_db("SELECT * FROM messages WHERE (username=? AND buddy=?) OR (username=? AND buddy=?) ORDER BY stamp DESC LIMIT 10",
-    					[user["username"], username, username, user["username"]])
-    
+                        [user["username"], username, username, user["username"]])
+
     # Redirect to private chat page
     return render_template("chat.html", user=cur_user, dest=username, messages=reversed(messages))
 
 
 @app.route("/discussions", methods=["GET"])
-
 def discussions():
     """Redirect to discussions page"""
 
@@ -311,19 +300,14 @@ def discussions():
     return render_template("discussions.html", user=user, posts=posts)
 
 
-def errorhandler(e):
-    """Handle error"""
-    return apology(e.name, e.code)
-
-
 # filter to print timestap for messages in templates
 @app.template_filter('strftime')
 def _jinja2_filter_datetime(date, fmt=None):
     date = parser.parse(date)
     native = date.replace(tzinfo=None)
-    format='%H:%M'
-    return native.strftime(format) 
-    
+    format = '%H:%M'
+    return native.strftime(format)
+
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -332,7 +316,3 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
-
-# listen for errors
-for code in default_exceptions:
-    app.errorhandler(code)(errorhandler)
