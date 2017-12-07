@@ -111,7 +111,7 @@ $(document).ready(function() {
 
         // If the key is enter and the message is not blank
         if(event.keyCode === 13 && text != "") {
-
+          
           // Remove the user's message from input on html page
           $("#inputMessage").val('');
 
@@ -127,12 +127,6 @@ $(document).ready(function() {
         }
       })
   }
-
-  // User wishes to join a private chat from notification button
-  $(".btnmsg").click(function() {
-    id = $(this).attr('name');
-    socket.emit("private message", id)
-  })
   
   // Style usernames from old messages in database
   $('.username').each(function(){
@@ -164,7 +158,7 @@ $(document).ready(function() {
       .append($usernameDiv, " ", $stampDiv, "<br> ", $postBodyDiv);
 
     // Add post to list of posts
-    $posts.append($postDiv);
+    $posts.prepend($postDiv)
   }
   
   // Add a chat message to html

@@ -89,6 +89,7 @@ ul {
   margin: 0;
   overflow-y: scroll;
   padding: 10px 20px 10px 20px;
+  text-align: left;
 }
 
 .username {
@@ -139,19 +140,9 @@ ul {
 
 .post {
   border: 2px solid;
-  padding-bottom: 2px;
-}
-
-.postText {
-  outline: none;
-}
-
-.posts {
-  padding-bottom: 10px;
 }
 
 .postText {
   width: 80%;
-  height: 100%;
 }
 

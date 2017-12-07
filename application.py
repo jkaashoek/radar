@@ -9,7 +9,8 @@ from dateutil import parser
 import sqlite3, datetime
 
 from helpers import apology, login_required, get_db, make_dicts, query_db, insert, get_user
-       
+
+debug = True
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 
@@ -58,6 +59,10 @@ if __name__ == '__main__':
 @socketio.on("connected")
 def connected(json):
 	"""Adds user to active user once a user connects."""
+
+        if debug:
+            print("connected", json)
+
 	if session.has_key("user_id"):
 		active_users.add_user(json["data"], request.sid)
 
@@ -65,6 +70,10 @@ def connected(json):
 @socketio.on("disconnect")
 def disconnect():
 	"""Remove user from active users when they disconnect."""
+
+        if debug:
+            print("disconnect")
+
 	if session.has_key("user_id"):
 		user = get_user(session["user_id"])
 		active_users.del_user(user, request.sid)
@@ -90,7 +99,10 @@ def new_message(json):
 	"""Handles when a user sends a new message"""
 	if not session.has_key("user_id"):
 		return
-                    
+
+        if debug:
+            print("message", json)
+
 	# Add message to the database
 	json["stamp"] = str(datetime.datetime.now())
 	result = insert("messages", ("username", "buddy", "text", "stamp"), (json["username"], json["buddy"], json["message"], json["stamp"]))
@@ -106,7 +118,8 @@ def new_message(json):
 			sids = active_users.get_sids(json["buddy"])
 
 			# Emit to user wishing to chat on each connection.  Flask sets up a room for each connection.
-			emit("add message", json, room=sid)
+                        for sid in sids:
+			    emit("add message", json, room=sid)
 
 			# Emit back to user
 			emit("add message", json)
@@ -313,7 +326,7 @@ def discussions():
     posts = query_db("SELECT * FROM posts ORDER BY stamp DESC")
 
     # Redirect posts to about page
-    return render_template("discussions.html", user=user, posts=reversed(posts))
+    return render_template("discussions.html", user=user, posts=posts)
 
 
 def errorhandler(e):
